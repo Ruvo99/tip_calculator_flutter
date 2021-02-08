@@ -10,8 +10,34 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  _tipCalculation() {
-    // TODO: completar
+  var _textController = TextEditingController();
+  bool _switchValue = false;
+  int _selectedValue = 0;
+  double _tipAmount = 0.0;
+  var radioGroupValues = {
+    0: 'Amazing 20%',
+    1: 'Good 18%',
+    2: 'Okay 15%',
+  };
+
+  double _tipCalculation() {
+    var costOfService = double.parse(_textController.text ?? '0.0');
+    switch (_selectedValue) {
+      case 0:
+        costOfService *= 1.20;
+        break;
+      case 1:
+        costOfService *= 1.18;
+        break;
+      case 2:
+        costOfService *= 1.15;
+        break;
+      default:
+    }
+
+    if (_switchValue) costOfService.ceilToDouble();
+
+    return costOfService;
   }
 
   @override
@@ -27,17 +53,50 @@ class _HomePageState extends State<HomePage> {
             leading: Icon(Icons.room_service),
             title: Padding(
               padding: EdgeInsets.only(right: 24),
-              child: TextField(),
+              child: TextField(
+                controller: _textController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Cost of service',
+                  border: OutlineInputBorder(),
+                ),
+              ),
             ),
           ),
           ListTile(
             leading: Icon(Icons.dinner_dining),
             title: Text("How was the service?"),
           ),
-          Text("Aqui agregar el GRUPO de radio buttons"),
+          Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: radioGroupValues.entries
+                  .map((element) => ListTile(
+                        leading: Radio(
+                            value: element.key,
+                            groupValue: _selectedValue,
+                            onChanged: (chosenRadio) {
+                              setState(() {
+                                _selectedValue = chosenRadio;
+                              });
+                            }),
+                        title: Text('${element.value}'),
+                      ))
+                  .toList(),
+            ),
+          ),
           ListTile(
             leading: Icon(Icons.credit_card),
             title: Text("Round up tip"),
+            trailing: Switch(
+              value: _switchValue,
+              onChanged: (chosenSwitchValue) {
+                setState(() {
+                  _switchValue = chosenSwitchValue;
+                });
+              },
+            ),
           ),
           Row(
             children: [
@@ -45,14 +104,28 @@ class _HomePageState extends State<HomePage> {
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 12),
                   child: MaterialButton(
-                    child: Text("CALCULATE"),
-                    onPressed: null,
+                    color: Colors.green,
+                    child: Text(
+                      "CALCULATE",
+                      style: TextStyle(color: Colors.grey[200]),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _tipAmount = _tipCalculation();
+                      });
+                    },
                   ),
                 ),
               ),
             ],
           ),
-          Text("Tip amount: \$20.00"),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Text(
+              "Tip amount: \$${_tipAmount.toStringAsFixed(2)}",
+              textAlign: TextAlign.end,
+            ),
+          ),
         ],
       ),
     );
